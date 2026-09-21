@@ -1,18 +1,46 @@
-# secrets
+# This is the one file that decides what reaches the repository — keep every rule here,
+# so auditing it means reading one file. (Comments must sit on their own line: git takes
+# a trailing "# ..." as part of the pattern.)
+
+# ── Secrets ─────────────────────────────────────────────────────────────────────
+# Every secret lives in .env. .env.example holds placeholders only and is committed.
 .env
 .env.*
 !.env.example
+# The Google key now lives in .env as GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY.
+# The old key file stays ignored, along with any renamed copy of it, so a stray one on
+# disk can never be committed.
 backend/service-account-key.json
+backend/service-account-key.json.*
+*.pem
 
-# dependencies / build output
+# ── Dependencies / build output ─────────────────────────────────────────────────
 node_modules/
+backend/dist/
 frontend/.next/
 frontend/out/
+*.tsbuildinfo
 
-# runtime data
+# ── Runtime output ──────────────────────────────────────────────────────────────
 backend/uploads/
 generated/
 
-# OS / editor
+# ── backend/data ────────────────────────────────────────────────────────────────
+# Holds two different things. The app's shipped assets — templates, prompts, the skills
+# database — are committed, because a fresh clone cannot run without them. One
+# installation's own state is not:
+#
+# Admin settings: machine-specific paths, and the admin UI can still store an API key
+# here, so it must never be committed even though it holds none today.
+backend/data/config/
+# Candidate profiles: real people's names, emails, phone numbers and locations.
+backend/data/profiles/
+# Groups of those profiles; meaningless without them.
+backend/data/groups/
+# Backups left beside the files they copied, by the app and by past edits.
+backend/data/**/*.bak*
+backend/data/**/removed-*
+
+# ── OS / editor ─────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

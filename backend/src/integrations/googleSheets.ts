@@ -281,11 +281,35 @@ async function resolveServiceAccountPath(): Promise<string> {
 
   throw new GoogleSheetsRequestError(
     500,
-    'Google Service Account key file was not found. Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH or place service-account-key.json in the project or backend directory.'
+    'Google Service Account credentials were not found. Set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY in .env (preferred), or set GOOGLE_SERVICE_ACCOUNT_KEY_PATH, or place service-account-key.json in the project or backend directory.'
   );
 }
 
+/**
+ * Credentials from the environment, when both halves are set.
+ *
+ * This is the preferred source: it keeps the private key in `.env` beside every other
+ * secret, where one ignore rule covers them all, rather than in a JSON file that has to be
+ * remembered separately. GOOGLE_PRIVATE_KEY may carry its newlines either as real line
+ * breaks or as literal `\n` — the form a key takes when pasted onto one line of a .env.
+ */
+function readServiceAccountFromEnvironment(): Required<GoogleServiceAccountCredentials> | null {
+  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim();
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.trim();
+  if (!clientEmail || !privateKey) return null;
+  return {
+    client_email: clientEmail,
+    private_key: normalizePrivateKey(privateKey),
+    token_uri: process.env.GOOGLE_TOKEN_URI?.trim() || DEFAULT_TOKEN_URI,
+  };
+}
+
 async function loadServiceAccountCredentials(): Promise<Required<GoogleServiceAccountCredentials>> {
+  const fromEnvironment = readServiceAccountFromEnvironment();
+  if (fromEnvironment) return fromEnvironment;
+
+  // Fallback: a downloaded key file. Still supported so an existing setup keeps working,
+  // but the environment variables above take precedence when both are present.
   const filePath = await resolveServiceAccountPath();
   const raw = await fs.readFile(filePath, 'utf8');
 

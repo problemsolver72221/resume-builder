@@ -1,2 +1,5 @@
+# Every ignore rule for this project lives in the root .gitignore, so it can be audited in
+# one place. This file used to exclude /data outright, which kept the templates, prompts
+# and skills database out of the repository — and git cannot re-include anything under a
+# directory a nested .gitignore has excluded, so no rule at the root could undo it.
 /node_modules
-/data
