@@ -1,0 +1,19 @@
+# secrets
+.env
+.env.*
+!.env.example
+backend/service-account-key.json
+
+# dependencies / build output
+node_modules/
+backend/dist/
+frontend/.next/
+frontend/out/
+
+# runtime data
+backend/uploads/
+generated/
+
+# OS / editor
+.DS_Store
+Thumbs.db
