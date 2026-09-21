@@ -6,7 +6,6 @@ backend/service-account-key.json
 
 # dependencies / build output
 node_modules/
-backend/dist/
 frontend/.next/
 frontend/out/
 
